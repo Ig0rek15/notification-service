@@ -14,6 +14,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbit
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -32,6 +35,16 @@ services:
       - "8000:8000"
     depends_on:
       - db
+
+  worker:
+    build: ./backend
+    command: celery -A project worker -l info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - web
+      - rabbitmq
+      - redis
 
 volumes:
   pgdata:
