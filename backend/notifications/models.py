@@ -1,9 +1,20 @@
 import uuid
 
-
 from django.db import models
 
-# Create your models here.
+
+class NotificationStatus(models.TextChoices):
+    QUEUED = 'queued', 'Queued'
+    PROCESSING = 'processing', 'Processing'
+    SENT = 'sent', 'Sent'
+    FAILED = 'failed', 'Failed'
+
+
+class NotificationChannel(models.TextChoices):
+    EMAIL = 'email', 'Email'
+    TELEGRAM = 'telegram', 'Telegram'
+    SMS = 'sms', 'SMS'
+    VK = 'vk', 'VK'
 
 
 class Notification(models.Model):
@@ -12,11 +23,22 @@ class Notification(models.Model):
         default=uuid.uuid4,
         editable=False
     )
-    channel = models.CharField(max_length=64)
+    channel = models.CharField(
+        max_length=32,
+        choices=NotificationChannel.choices
+    )
     recipient = models.CharField(max_length=64)
-    subject = None
+    subject = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
     message = models.TextField()
-    status = models.CharField(max_length=32)
+    status = models.CharField(
+        max_length=32,
+        choices=NotificationStatus.choices,
+        default=NotificationStatus.QUEUED
+    )
     attempts = models.PositiveSmallIntegerField(default=0,)
     error = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
