@@ -1,32 +1,54 @@
-import time
-
 from celery import shared_task
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.utils.timezone import now
 
 from .models import Notification, NotificationStatus
 
 
-@shared_task(
-    bind=True,
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_kwargs={'max_retries': 3}
-)
+MAX_ATTEMPTS = 3
+
+
+@shared_task(bind=True, max_retries=MAX_ATTEMPTS)
 def send_notification(self, notification_id: str) -> None:
     try:
         with transaction.atomic():
-            notification = Notification.objects.select_for_update().get(id=notification_id)
+            notification = (
+                Notification.objects
+                .select_for_update()
+                .get(id=notification_id)
+            )
+
+            if notification.status in (
+                NotificationStatus.SENT,
+                NotificationStatus.FAILED,
+            ):
+                return
+
             notification.status = NotificationStatus.PROCESSING
-            notification.attempts += 1
-            notification.save(update_fields=['status'])
-    except ObjectDoesNotExist:
+            notification.save(update_fields=["status"])
+
+        try:
+            # perform_send(notification)
+
+            with transaction.atomic():
+                notification.status = NotificationStatus.SENT
+                notification.error = None
+                notification.save(update_fields=["status", "error"])
+            return
+
+        except Exception as exc:
+            with transaction.atomic():
+                notification.attempts += 1
+                notification.error = str(exc)
+                notification.save(update_fields=["attempts", "error"])
+
+            if notification.attempts >= MAX_ATTEMPTS:
+                with transaction.atomic():
+                    notification.status = NotificationStatus.FAILED
+                    notification.save(update_fields=["status"])
+                return
+
+            raise self.retry(exc=exc, countdown=2 ** notification.attempts)
+
+    except Notification.DoesNotExist:
         return
-
-    time.sleep(3)
-
-    with transaction.atomic():
-        notification = Notification.objects.select_for_update(
-            ).get(id=notification_id)
-        notification.status = NotificationStatus.SENT
-        notification.save(update_fields=['status'])
