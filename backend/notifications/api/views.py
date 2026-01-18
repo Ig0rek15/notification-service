@@ -1,9 +1,9 @@
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 
-from .models import Notification
+from notifications.models import Notification
 from .serializers import NotificationSerializer
-from .tasks import send_notification
+from notifications.tasks.send_notification import send_notification
 
 
 class NotificationViewSet(
