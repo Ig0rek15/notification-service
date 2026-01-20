@@ -4,6 +4,11 @@ from notifications.models import Notification
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    scheduled_at = serializers.DateTimeField(
+        required=False,
+        allow_null=True
+    )
+
     class Meta:
         model = Notification
         fields = (
@@ -16,6 +21,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             'error',
             'created_at',
             'updated_at',
+            'scheduled_at',
         )
         read_only_fields = (
             'status',

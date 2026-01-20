@@ -34,6 +34,11 @@ class Notification(models.Model):
         blank=True
     )
     message = models.TextField()
+    scheduled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Когда уведомление должно быть отправлено'
+    )
     status = models.CharField(
         max_length=32,
         choices=NotificationStatus.choices,

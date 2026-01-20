@@ -46,5 +46,13 @@ services:
       - rabbitmq
       - redis
 
+  celery-beat:
+    build: ./backend
+    command: celery -A project beat -l info
+    depends_on:
+      - rabbitmq
+      - redis
+
+
 volumes:
   pgdata:
