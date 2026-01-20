@@ -131,7 +131,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CELERY_BEAT_SCHEDULE = {
     'dispatch-scheduled-notifications': {
-        'task': 'notifications.tasks.dispatch_scheduled_notifications',
+        'task': 'notifications.tasks.dispatch_scheduled_notifications.dispatch_scheduled_notifications',
         'schedule': 60.0,
     },
 }

@@ -53,6 +53,16 @@ services:
       - rabbitmq
       - redis
 
+  flower:
+    image: mher/flower
+    command: celery flower --broker=${CELERY_BROKER_URL}
+    env_file:
+      - .env
+    ports:
+      - '5555:5555'
+    depends_on:
+      - rabbitmq
+    
 
 volumes:
   pgdata:
