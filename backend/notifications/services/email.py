@@ -10,5 +10,5 @@ class EmailNotificationSender(NotificationSender):
         if '@' not in notification.recipient:
             raise NonRetryableNotificationError('Invalid email')
 
-        # тут позже будет SMTP
+        # тут позже будет SMTP (Наверно)
         return
