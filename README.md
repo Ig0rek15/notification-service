@@ -56,6 +56,9 @@ POSTGRES_PORT=5432
 # Celery / RabbitMQ
 CELERY_BROKER_URL=amqp://rabbit:rabbit@rabbitmq:5672//
 
+# Telegram
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+
 # SMTP
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
