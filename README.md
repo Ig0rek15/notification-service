@@ -2,12 +2,6 @@
 
 Backend-сервис для асинхронной отправки уведомлений с использованием очередей и фоновых воркеров.
 
-Проект реализован как pet-project:
-- асинхронная обработка
-- retry-логика
-- отложенные задачи
-- наблюдаемость через Flower
-- Docker-окружение
 
 ---
 
@@ -25,53 +19,17 @@ Backend-сервис для асинхронной отправки уведом
 
 ---
 
-## Архитектура (кратко)
+## Возможности
 
-- **Django API**
-  - принимает HTTP-запросы
-  - валидирует данные
-  - сохраняет уведомления в БД
-  - ставит задачи в очередь
-
-- **Celery Worker**
-  - асинхронно отправляет уведомления
-  - управляет retry-логикой
-  - обновляет статус уведомлений
-
-- **Celery Beat**
-  - периодически проверяет отложенные уведомления
-  - диспатчит их в очередь
-
-- **RabbitMQ**
-  - брокер сообщений
-
-- **Redis**
-  - result backend для Celery
-
-- **Flower**
-  - мониторинг воркеров и задач
-
-
----
-
-## Структура проекта
-
-```bash
-notification-service/
-├── backend/
-│ ├── project/ # Django project
-│ ├── notifications/ # Основное приложение
-│ │ ├── api/ # API (serializers, views, urls)
-│ │ ├── services/ # Бизнес-логика отправки
-│ │ ├── selectors/ # Query-логика (read-only)
-│ │ ├── tasks/ # Celery задачи
-│ │ ├── models.py
-│ ├── manage.py
-├── docker-compose.yml
-├── .env.example
-├── README.md
-```
-
+- Асинхронная отправка уведомлений
+- Поддержка нескольких каналов:
+  - Email (SMTP)
+  - Telegram Bot
+- Retry-логика с backoff
+- Отложенные уведомления (`scheduled_at`)
+- Хранение статусов и ошибок в БД
+- Наблюдаемость через Flower и логи
+- Админ-панель для просмотра уведомлений
 
 ---
 
@@ -97,6 +55,14 @@ POSTGRES_PORT=5432
 
 # Celery / RabbitMQ
 CELERY_BROKER_URL=amqp://rabbit:rabbit@rabbitmq:5672//
+
+# SMTP
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_USE_TLS=True
+SMTP_FROM_EMAIL=your_email@gmail.com
 ```
 
 ---
@@ -117,17 +83,27 @@ docker-compose up --build
 ## API
 ### Создание уведомления
 
-```bash
 POST /api/notifications/
-```
 
-Пример запроса:
-```json
-{
-  "channel": "email",
-  "recipient": "user@example.com",
-  "message": "Hello from async service"
-}
+Поля:
+- `channel` — `email` или `telegram`
+- `recipient` — email или telegram `chat_id`
+- `message` — текст уведомления
+- `scheduled_at` (опционально) — дата отправки
+
+
+---
+
+## Пример запроса
+
+```bash
+curl -X POST http://localhost:8000/api/notifications/ \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "channel": "telegram",
+    "recipient": "123456789",
+    "message": "Hello from async notification service"
+  }'
 ```
 
 Ответ:
