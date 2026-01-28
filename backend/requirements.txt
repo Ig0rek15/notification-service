@@ -31,3 +31,7 @@ tzdata==2025.3
 urllib3==2.6.3
 vine==5.1.0
 wcwidth==0.2.14
+
+pytest
+pytest-django
+pytest-mock
