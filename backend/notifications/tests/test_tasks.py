@@ -20,7 +20,6 @@ def test_send_notification_success(mocker, notification):
     assert notification.status == NotificationStatus.SENT
 
 
-
 @pytest.mark.django_db
 def test_send_notification_non_retryable_error(mocker, notification):
     mocker.patch(
